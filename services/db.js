@@ -4,7 +4,7 @@ const initializeDB = async () => {
   const pool = new Pool({
     user: 'maowirxtskyrlg',
     password:
-      '79ee56f51477b3b086001ddf50991c38512481a09118ed5cd903ec5723befe7',
+      '79ee56f51477b3b086001ddf50991c38512481a09118ed5cd903ec5723befe7c',
     database: 'd6sv9kgmerqsqu',
     host:
       process.env.NODE_ENV === 'production'
