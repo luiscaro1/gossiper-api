@@ -2,12 +2,13 @@ const { Pool } = require('pg');
 
 const initializeDB = async () => {
   const pool = new Pool({
-    user: 'postgres',
-    password: 'postgres',
-    database: 'gossiper:1.0-db',
+    user: 'maowirxtskyrlg',
+    password:
+      '79ee56f51477b3b086001ddf50991c38512481a09118ed5cd903ec5723befe7',
+    database: 'd6sv9kgmerqsqu',
     host:
       process.env.NODE_ENV === 'production'
-        ? 'https://gossiper-db.herokuapp.com/'
+        ? 'ec2-52-21-153-207.compute-1.amazonaws.com'
         : 'db',
     port: 5432,
   });
