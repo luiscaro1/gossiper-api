@@ -11,7 +11,9 @@ const initializeDB = async () => {
         ? 'ec2-52-21-153-207.compute-1.amazonaws.com'
         : 'db',
     port: 5432,
-    ssl: true,
+    ssl: {
+      rejectUnauthorized: false,
+    },
   });
   // adds the tables if they don't already exist
   try {
