@@ -3,6 +3,7 @@ FROM node
 COPY . /server
 
 WORKDIR /server
+ENV NODE_ENV "production"
 
 RUN npm install
 
