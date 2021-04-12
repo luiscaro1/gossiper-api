@@ -91,6 +91,12 @@ const postsGet = async (req, res, pool) => {
 const postsLikePost = async (req, res, pool) => {
   const { uid } = req.body;
   const { id } = req.params;
+
+  await pool.query(
+    'DELETE FROM Unlikes WHERE uid = $1 AND pid = $2',
+    [uid, id],
+  );
+
   await pool.query(
     'INSERT INTO Likes (uid,pid,timestamp) VALUES ($1, $2, $3)',
     [uid, id, Date.now()],
@@ -148,6 +154,10 @@ const postsUnlikePost = async (req, res, pool) => {
   // id for the target post
   const { uid } = req.body;
   const { id } = req.params;
+  await pool.query('DELETE FROM Likes WHERE uid = $1 AND pid = $2', [
+    uid,
+    id,
+  ]);
   await pool.query(
     'INSERT INTO Unlikes (uid,pid,timestamp) VALUES ($1, $2, $3)',
     [uid, id, Date.now()],
