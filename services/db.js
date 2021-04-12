@@ -38,7 +38,7 @@ const initializeDB = async () => {
       CREATE TABLE Posts (
         pid SERIAL UNIQUE PRIMARY KEY,
         uid INT REFERENCES Users ON DELETE CASCADE,
-        content VARCHAR(255) NOT NULL UNIQUE,
+        content VARCHAR(255) NOT NULL,
         timestamp BIGINT NOT NULL
       );
 
@@ -57,7 +57,7 @@ const initializeDB = async () => {
       CREATE TABLE Replies (
         uid INT REFERENCES Users (uid) ON DELETE CASCADE,
         pid INT REFERENCES Posts (pid) ON DELETE CASCADE,
-        content VARCHAR(255) NOT NULL UNIQUE,
+        content VARCHAR(255) NOT NULL,
         PRIMARY KEY(uid,pid),
         timestamp BIGINT NOT NUll
       );
