@@ -41,6 +41,10 @@ const init = async () => {
   // enable the users routes
   app.use('/gossiper', userRoutes(pool));
   app.use('/gossiper', postRoutes(pool));
+
+  app.use('/', (req, res) => {
+    res.json('Gossiper API');
+  });
 };
 
 init();
