@@ -78,6 +78,8 @@ const usersIdGet = async (req, res, pool) => {
       [id],
       (err, r) => {
         if (err) res.json(handleErrors(err));
+        if (r.rows.length === 0)
+          res.status(400).send('A user with that Id does not exist');
         res.json(r.rows[0]);
       },
     );
