@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-
+const rn = require('node-random-name');
 /* *********** CREATE AND MODIFY *********** */
 /*
 
@@ -9,7 +9,15 @@ user object
 
 const usersPost = async (req, res, next, pool) => {
   try {
-    const { username, password } = req.body;
+    let username;
+    let password;
+    if (!req.body || (!req.body.username && !req.body.password)) {
+      username = rn();
+      password = rn();
+    } else {
+      username = req.body.username;
+      password = req.body.password;
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -18,7 +26,8 @@ const usersPost = async (req, res, next, pool) => {
       'INSERT INTO Users(username,password) VALUES ($1,$2)',
       [username, hashedPassword],
     );
-    next();
+
+    res.status(200).end();
   } catch (err) {
     res.status(400).send(err);
   }
