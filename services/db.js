@@ -39,48 +39,50 @@ const initializeDB = async () => {
         pid SERIAL UNIQUE PRIMARY KEY,
         uid INT REFERENCES Users ON DELETE CASCADE,
         content VARCHAR(255) NOT NULL,
-        timestamp BIGINT NOT NULL
+        timestamp DATE NOT NULL DEFAULT CURRENT_DATE
       );
 
       CREATE TABLE Follows (
         follower_id INT REFERENCES Users (uid) ON DELETE CASCADE,
         followee_id INT REFERENCES Users (uid) ON DELETE CASCADE ,
-        PRIMARY KEY(follower_id,followee_id)
+        PRIMARY KEY(follower_id,followee_id),
+        UNIQUE(follower_id,followee_id)
       );
 
       CREATE TABLE Blocks (
         blocker_id INT REFERENCES Users (uid) ON DELETE CASCADE,
         blockee_id INT REFERENCES Users (uid) ON DELETE CASCADE,
-        PRIMARY KEY(blocker_id,blockee_id)
+        PRIMARY KEY(blocker_id,blockee_id),
+        UNIQUE(blocker_id,blockee_id)
       );
 
       CREATE TABLE Replies (
         uid INT REFERENCES Users (uid) ON DELETE CASCADE,
         pid INT REFERENCES Posts (pid) ON DELETE CASCADE,
         content VARCHAR(255) NOT NULL,
-        PRIMARY KEY(uid,pid),
-        timestamp BIGINT NOT NUll
+        timestamp DATE NOT NULL DEFAULT CURRENT_DATE
       );
 
       CREATE TABLE Shares (
         uid INT REFERENCES Users (uid) ON DELETE CASCADE,
         pid INT REFERENCES Posts (pid) ON DELETE CASCADE,
-        PRIMARY KEY(uid,pid),
-        timestamp BIGINT NOT NUll
+        timestamp DATE NOT NULL DEFAULT CURRENT_DATE
       );
 
       CREATE TABLE Likes (
         uid INT REFERENCES Users (uid) ON DELETE CASCADE,
         pid INT REFERENCES Posts (pid) ON DELETE CASCADE,
-        timestamp BIGINT NOT NUll,
-        PRIMARY KEY(uid,pid)
+        timestamp DATE NOT NULL DEFAULT CURRENT_DATE,
+        PRIMARY KEY(uid,pid),
+        UNIQUE(uid,pid)
       );
 
       CREATE TABLE Unlikes (
         uid INT REFERENCES Users (uid) ON DELETE CASCADE,
         pid INT REFERENCES Posts (pid) ON DELETE CASCADE,
-        timestamp BIGINT NOT NULL,
-        PRIMARY KEY(uid,pid)
+        timestamp DATE NOT NULL DEFAULT CURRENT_DATE,
+        PRIMARY KEY(uid,pid),
+        UNIQUE(uid,pid)
 
       );
   `,

@@ -1,14 +1,5 @@
 const bcrypt = require('bcrypt');
 
-const handleErrors = (err) => {
-  switch (err.code) {
-    case '23505':
-      return { error: 'Already exists!' };
-    default:
-      return { error: 'Failed, try again later!' };
-  }
-};
-
 /* *********** CREATE AND MODIFY *********** */
 /*
 
@@ -23,14 +14,11 @@ const usersPost = async (req, res, next, pool) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // creating a user and posting them in the database
-    pool.query(
+    await pool.query(
       'INSERT INTO Users(username,password) VALUES ($1,$2)',
       [username, hashedPassword],
-      (err) => {
-        if (err) res.json(handleErrors(err));
-        next();
-      },
     );
+    next();
   } catch (err) {
     res.status(400).send(err);
   }
@@ -56,10 +44,8 @@ const usersGet = async (req, res, pool) => {
       if (i < selectors.length - 1) queryString += '\tAND\t';
     });
 
-    pool.query(queryString, Object.values(query), (err, r) => {
-      if (err) res.json(handleErrors(err));
-      res.json(r.rows);
-    });
+    const r = await pool.query(queryString, Object.values(query));
+    res.json(r.rows);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -73,16 +59,13 @@ const usersIdGet = async (req, res, pool) => {
   try {
     const { id } = req.params;
 
-    pool.query(
-      `SELECT * FROM Users WHERE uid = $1`,
-      [id],
-      (err, r) => {
-        if (err) res.json(handleErrors(err));
-        if (r.rows.length === 0)
-          res.status(400).send('A user with that Id does not exist');
-        res.json(r.rows[0]);
-      },
-    );
+    const r = await pool.query(`SELECT * FROM Users WHERE uid = $1`, [
+      id,
+    ]);
+
+    if (r.rows.length === 0)
+      res.status(400).send('A user with that Id does not exist');
+    res.json(r.rows[0]);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -107,14 +90,8 @@ const usersIdPut = async (req, res, pool) => {
 
     queryString += ` WHERE uid=$${newValues.length + 1}`;
 
-    pool.query(
-      queryString,
-      [...Object.values(req.body), id],
-      (err) => {
-        if (err) res.json(handleErrors(err));
-        res.status(200).end();
-      },
-    );
+    await pool.query(queryString, [...Object.values(req.body), id]);
+    res.status(200).end();
   } catch (err) {
     res.status(400).send(err);
   }
@@ -129,10 +106,8 @@ const usersIdDelete = async (req, res, pool) => {
     const { id } = req.params;
 
     /* delete user */
-    pool.query('DELETE FROM Users WHERE uid = $1', [id], (err) => {
-      if (err) res.json(handleErrors(err));
-      res.status(200).end();
-    });
+    await pool.query('DELETE FROM Users WHERE uid = $1', [id]);
+    res.status(200).end();
   } catch (err) {
     res.status(400).send(err);
   }
@@ -145,16 +120,14 @@ const usersIdDelete = async (req, res, pool) => {
 const usersFollowPost = async (req, res, pool) => {
   try {
     // id of the user who is going to be followed
-    const { uid } = req.body;
+    const { RegisteredUser } = req.body;
     const { id } = req.params;
+
     await pool.query(
       'INSERT INTO Follows (follower_id, followee_id) VALUES ($1,$2)',
-      [uid, id],
-      (err) => {
-        if (err) res.json(handleErrors(err));
-        res.status(201).end();
-      },
+      [RegisteredUser, id],
     );
+    res.status(201).end();
 
     // The id of the follower needs to be passed through the body
   } catch (err) {
@@ -169,14 +142,11 @@ const usersFollowedByGet = async (req, res, pool) => {
     // id of the target user
     const { id } = req.params;
 
-    await pool.query(
+    const r = await pool.query(
       'SELECT U.uid, U.username, U.password FROM Follows as F, Users as U WHERE F.followee_id = U.uid AND follower_id=$1',
       [id],
-      (err, r) => {
-        if (err) res.json(handleErrors(err));
-        res.json(r.rows);
-      },
     );
+    res.json(r.rows);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -188,14 +158,12 @@ const usersFollowsGet = async (req, res, pool) => {
   try {
     // id of the target user
     const { id } = req.params;
-    await pool.query(
+
+    const r = await pool.query(
       'SELECT U.uid,U.username,U.password FROM Follows as F, Users as U WHERE F.follower_id = U.uid AND F.followee_id=$1',
       [id],
-      (err, r) => {
-        if (err) res.json(handleErrors(err));
-        res.json(r.rows);
-      },
     );
+    res.json(r.rows);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -210,16 +178,13 @@ const usersUnfollowPost = async (req, res, pool) => {
     // user to be unfollowed
     const { id } = req.params;
 
-    const { uid } = req.body;
+    const { RegisteredUser } = req.body;
 
     await pool.query(
       'DELETE FROM Follows WHERE follower_id=$1 AND followee_id=$2',
-      [uid, id],
-      (err) => {
-        if (err) res.json(handleErrors(err));
-        res.status(200).end();
-      },
+      [RegisteredUser, id],
     );
+    res.status(200).end();
   } catch (err) {
     res.satus(400).send(err);
   }
@@ -236,17 +201,13 @@ const usersBlockPost = async (req, res, pool) => {
     // id of the user that is going to be blocked
 
     const { id } = req.params;
-    const { uid } = req.body;
+    const { RegisteredUser } = req.body;
 
     await pool.query(
       'INSERT INTO Blocks (blocker_id,blockee_id) VALUES($1,$2)',
-      [uid, id],
-      (err) => {
-        if (err) res.json(handleErrors(err));
-
-        res.status(201).end();
-      },
+      [RegisteredUser, id],
     );
+    res.status(201).end();
   } catch (err) {
     res.status(400).send(err);
   }
@@ -260,15 +221,11 @@ const usersBlockedByGet = async (req, res, pool) => {
     // id of the user that has blocked
     const { id } = req.params;
 
-    await pool.query(
+    const r = await pool.query(
       'SELECT U.uid, U.username, U.password FROM Blocks as B, Users U WHERE B.blockee_id = U.uid AND B.blocker_id = $1',
       [id],
-      (err, r) => {
-        if (err) res.json(handleErrors(err));
-
-        res.json(r.rows);
-      },
     );
+    res.json(r.rows);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -281,15 +238,11 @@ const usersBlockGet = async (req, res, pool) => {
     // id of the user who is blocked
     const { id } = req.params;
 
-    await pool.query(
+    const r = await pool.query(
       'SELECT U.uid, U.username, U.password FROM Blocks as B, Users U WHERE B.blocker_id = U.uid AND B.blockee_id = $1',
       [id],
-      (err, r) => {
-        if (err) res.json(handleErrors(err));
-
-        res.json(r.rows);
-      },
     );
+    res.json(r.rows);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -303,17 +256,13 @@ const usersUnblockPost = async (req, res, pool) => {
   try {
     // person to be unblocked
     const { id } = req.params;
-    const { uid } = req.body;
+    const { RegisteredUser } = req.body;
 
     await pool.query(
       'DELETE FROM Blocks WHERE blocker_id = $1 AND blockee_id = $2',
-      [uid, id],
-      (err) => {
-        if (err) res.json(handleErrors(err));
-
-        res.status(200).end();
-      },
+      [RegisteredUser, id],
     );
+    res.status(200).end();
   } catch (err) {
     res.status(400).send(err);
   }

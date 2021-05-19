@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyparser = require('body-parser');
+
 const cookieparser = require('cookie-parser');
 const cors = require('cors');
 const passport = require('passport');
@@ -17,8 +17,8 @@ const app = express();
 const PORT = process.env.PORT || '5000';
 
 const init = async () => {
-  app.use(bodyparser.urlencoded({ extended: false }));
-  app.use(bodyparser.json());
+  app.use(express.urlencoded({ extended: false }));
+  app.use(express.json());
   app.use(cookieparser());
   app.use(cors());
   app.use(passport.initialize());
@@ -39,8 +39,8 @@ const init = async () => {
   useLocalStrategy(passport, pool);
 
   // enable the users routes
-  app.use('/gossiper', userRoutes(pool));
-  app.use('/gossiper', postRoutes(pool));
+  app.use('/Gossiper', userRoutes(pool));
+  app.use('/Gossiper', postRoutes(pool));
 
   app.use('/', (req, res) => {
     res.json('Gossiper API');
