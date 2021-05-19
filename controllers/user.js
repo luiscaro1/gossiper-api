@@ -27,7 +27,7 @@ const usersPost = async (req, res, next, pool) => {
       [username, hashedPassword],
     );
 
-    res.status(200).end();
+    res.status(201).end();
   } catch (err) {
     res.status(400).send(err);
   }
